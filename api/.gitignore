@@ -1,2 +1,20 @@
 # ENV
 .venv*
+
+# Build files
+__pycache__/
+*.pyc
+*.pyo
+
+# Development
+*.log
+*.vscode
+*.vscode-remote
+*.idea
+*.iml
+*.ipynb_checkpoints
+*.pytest_cache
+*.mypy_cache
+*.coverage
+*.egg-info
+*.egg
