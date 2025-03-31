@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from bit2_api.core.domains.models import GameResult as LotteryResult
+from bit2_api.core.domains.models import GameResult
 from bit2_api.core.domains.utils.env import get_env_variable
 from bit2_api.core.ports import IScraperRepository
 
@@ -40,7 +40,7 @@ class ScraperRepository(IScraperRepository):
         # Ensure that the appropriate driver (e.g., chromedriver) is in your PATH.
         self.driver = webdriver.Chrome(options=options)
 
-    def fetch_results(self, week: str) -> List[LotteryResult]:
+    def fetch_results(self, week: str) -> List[GameResult]:
         """
         Fetch lottery results for a specified week.
         :param week: A string representing the week in the format "startDate - endDate" (e.g., "24/03/2025 - 30/03/2025")
@@ -105,7 +105,7 @@ class ScraperRepository(IScraperRepository):
                                 # Append a result if valid numbers are found.
                                 if numbers:
                                     results.append(
-                                        LotteryResult(
+                                        GameResult(
                                             draw_date=draw_date,
                                             numbers=numbers,
                                             type=draw_name,

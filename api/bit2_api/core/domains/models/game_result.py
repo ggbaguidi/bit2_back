@@ -20,5 +20,5 @@ class GameResult:
             "draw_date": self.draw_date.isoformat() if self.draw_date else None,
             "numbers": self.numbers,
             "bonus": self.bonus,
-            "type": self.type.name if self.type else None,  # Assuming `type` is an Enum
+            "type": self.type,
         }

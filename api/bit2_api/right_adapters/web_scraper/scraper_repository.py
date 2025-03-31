@@ -5,7 +5,7 @@ from typing import List
 import httpx
 from bs4 import BeautifulSoup
 
-from bit2_api.core.domains.models import GameResult as LotteryResult
+from bit2_api.core.domains.models import GameResult
 from bit2_api.core.domains.utils.env import get_env_variable
 from bit2_api.core.ports import IScraperRepository
 
@@ -27,7 +27,7 @@ class ScraperRepository(IScraperRepository):
 
     def fetch_results(
         self, month: str, draw: str, wait_time: int = 1
-    ) -> List[LotteryResult]:
+    ) -> List[GameResult]:
         try:
             html = self._fetch_page()
         except Exception as e:
@@ -48,7 +48,7 @@ class ScraperRepository(IScraperRepository):
         response.raise_for_status()
         return response.text
 
-    def _parse_results(self, html: str) -> List[LotteryResult]:
+    def _parse_results(self, html: str) -> List[GameResult]:
         """
         Parses the HTML content to extract lottery results.
         This method uses BeautifulSoup to navigate the HTML structure
@@ -57,7 +57,7 @@ class ScraperRepository(IScraperRepository):
         return parse_results_from_container(html)
 
 
-def parse_results_from_container(html: str) -> List[LotteryResult]:
+def parse_results_from_container(html: str) -> List[GameResult]:
     results = []
     soup = BeautifulSoup(html, "html.parser")
 
@@ -132,7 +132,7 @@ def parse_results_from_container(html: str) -> List[LotteryResult]:
                             numbers.append(int(num_text))
                     if numbers:
                         results.append(
-                            LotteryResult(
+                            GameResult(
                                 draw_date=draw_date,
                                 numbers=numbers,
                                 type=draw_name,

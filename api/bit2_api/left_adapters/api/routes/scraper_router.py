@@ -22,6 +22,8 @@ router = APIRouter()
 )
 @version(1)
 def scrape_results(
+    month: str,
+    year: str,
     scraper: ScraperRepository = Depends(ScraperRepository),
 ):
     """
@@ -29,10 +31,15 @@ def scrape_results(
     uc_ = inject.instance(ExtractGameResult)
 
     # Fetch results using the scraper
-    scraped_results = scraper.fetch_results(month="", draw="")
+    # current_day_scraper_results = scraper.fetch_current_results(month="", draw="")
+    scraped_results = scraper.fetch_results(month=f"{month} {year}", draw="")
 
     if not scraped_results:
         raise InvalidGameResultError
+
+    # sort the results by draw_date
+    # current_day_scraper_results.sort(key=lambda x: x.draw_date)
+    scraped_results.sort(key=lambda x: x.draw_date)
 
     for result in scraped_results:
         # Assuming result contains draw_date, numbers, bonus, and type

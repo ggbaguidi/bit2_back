@@ -6,7 +6,7 @@ from typing import List
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from bit2_api.core.domains.models import GameResult as LotteryResult
+from bit2_api.core.domains.models import GameResult as GameResult
 from bit2_api.right_adapters.web_scraper import ScraperRepository
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 current_week = {"start": "08/05/2023", "end": "14/05/2023"}
 
 # Optionally store last fetched results to avoid re-processing if nothing new appears.
-last_fetched_results: List[LotteryResult] = []
+last_fetched_results: List[GameResult] = []
 
 
 def format_date(date_obj: datetime.date) -> str:

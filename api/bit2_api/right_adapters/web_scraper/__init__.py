@@ -1,1 +1,1 @@
-from .selenium_scraper_repository import *
+from .selenium_scraper_repository_v3 import *

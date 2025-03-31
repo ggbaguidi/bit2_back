@@ -59,6 +59,7 @@ exclude = '''
     | htmlcov
     | venv
     | .venv
+    | .venv_local
   )/
 )
 '''

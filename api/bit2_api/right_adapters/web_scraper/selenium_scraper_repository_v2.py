@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from datetime import datetime
 from typing import List
 
@@ -10,7 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
 
-from bit2_api.core.domains.models import GameResult as LotteryResult
+from bit2_api.core.domains.models import GameResult
 from bit2_api.core.domains.utils.env import get_env_variable
 from bit2_api.core.ports import IScraperRepository
 
@@ -42,7 +43,7 @@ class ScraperRepository(IScraperRepository):
 
     def fetch_results(
         self, month: str, draw: str = "", wait_time: int = 1
-    ) -> List[LotteryResult]:
+    ) -> List[GameResult]:
         """
         Fetch lottery results for the specified month (e.g., "janvier 2025") and optional draw type.
         :param month: Month filter as a string (e.g., "janvier 2025").
@@ -51,56 +52,26 @@ class ScraperRepository(IScraperRepository):
         """
         try:
             self.driver.get(self.base_url)
-            wait = WebDriverWait(self.driver, 10 * wait_time)
-            print("Waiting for the page to load...")
-            # Wait and select the desired month with retry logic
-            max_attempts = 3
-            for attempt in range(max_attempts):
-                try:
-                    print(f"Selecting month (attempt {attempt+1}/{max_attempts})...")
-                    # Re-locate the element in each attempt to avoid stale references
-                    month_select_elem = wait.until(
-                        EC.presence_of_element_located((By.ID, "month"))
-                    )
-                    print("Month select element found.")
-                    month_select = Select(month_select_elem)
-                    print("Selecting month:", month)
-                    wait.until(
-                        lambda d: d.execute_script("return document.readyState")
-                        == "complete"
-                    )
-                    available_options = [option.text for option in month_select.options]
-                    print("Available options:", available_options)
-                    month_select.select_by_visible_text(month)
-                    print(f"Selected month: {month}")
+            wait = WebDriverWait(self.driver, 30)
+            # Wait until the page is fully loaded and React has finished processing.
+            wait.until(
+                lambda d: d.execute_script(
+                    'return document.readyState === "complete" && !document.querySelector(".loading-indicator")'
+                )
+            )
+            print("Page loaded and React processed the change.")
 
-                    # Wait for page to update after selection
-                    wait = WebDriverWait(self.driver, 10)
+            # Use a stable element finder to get the month select element.
+            month_select_element = get_stable_element(self.driver, By.ID, "month")
+            wait.until(EC.element_to_be_clickable((By.ID, "month")))
+            print("Month select element found.")
 
-                    wait.until(
-                        lambda d: d.execute_script("return document.readyState")
-                        == "complete"
-                    )
+            month_select = Select(month_select_element)
 
-                    # Verify the month was actually selected
-                    new_month_select_elem = wait.until(
-                        EC.presence_of_element_located((By.ID, "month"))
-                    )
-                    new_month_select = Select(new_month_select_elem)
-                    if new_month_select.first_selected_option.text == month:
-                        print("Month selected successfully.")
-                        logger.info("Selected month: %s", month)
-                        break
-                except (StaleElementReferenceException, TimeoutException) as e:
-                    if attempt == max_attempts - 1:
-                        raise
-                    logger.warning(
-                        f"Selection attempt {attempt+1} failed: {e}. Retrying..."
-                    )
-                    self.driver.refresh()
-                    month_select_elem = wait.until(
-                        EC.presence_of_element_located((By.ID, "month"))
-                    )
+            print("Selecting month...")
+            month_select.select_by_visible_text("janvier 2025")
+
+            print("Month selected.")
 
             # Optionally select the draw type.
             if draw:
@@ -162,7 +133,7 @@ class ScraperRepository(IScraperRepository):
                                 numbers = []
                             if numbers:
                                 results.append(
-                                    LotteryResult(
+                                    GameResult(
                                         draw_date=draw_date,
                                         numbers=numbers,
                                         type=draw_name,
@@ -170,6 +141,9 @@ class ScraperRepository(IScraperRepository):
                                     )
                                 )
             logger.info("Found %d results for month %s", len(results), month)
+
+            print("Results fetched successfully.")
+            print("Results:", results)
             return results
 
         except Exception as e:
@@ -199,3 +173,18 @@ class ScraperRepository(IScraperRepository):
         raise Exception(
             "Unable to retrieve fresh __NEXT_DATA__ element after multiple retries."
         )
+
+
+def get_stable_element(driver, by, locator, retries=5, delay=1):
+    """Locate an element and retry if a StaleElementReferenceException is encountered."""
+    for i in range(retries):
+        try:
+            element = driver.find_element(by, locator)
+            # Try to access a property to ensure it is still attached to the DOM.
+            _ = element.tag_name
+            return element
+        except StaleElementReferenceException:
+            time.sleep(delay)
+    raise Exception(
+        f"Element with locator {locator} remains stale after {retries} retries."
+    )

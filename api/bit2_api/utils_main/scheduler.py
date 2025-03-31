@@ -1,14 +1,9 @@
 import logging
 import time
 
-from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from bit2_api.right_adapters.web_scraper import ScraperRepository
-
-executors = {
-    "default": ThreadPoolExecutor(max_workers=3)  # Adjust max_workers as needed
-}
 
 MONTH = [
     "janvier",
@@ -72,7 +67,7 @@ def scrape_job():
     # Here, you can store the results or process them further.
     # Optionally, update current_month based on your business logic
     # For example, to move to the previous month, you could create a helper function:
-    current_month = get_previous_month("mars", "2025")
+    current_month = get_previous_month(*current_month.split())
     wait_time += 1  # Increment wait time for the next scrape
     # (You may need to implement a month decrement logic based on your data.)
 
@@ -80,20 +75,20 @@ def scrape_job():
 def start_scheduler():
     """Start the background scheduler."""
     logger.info("Starting the scheduler...")
-    scheduler = BackgroundScheduler(executors=executors)
+    scheduler = BackgroundScheduler()
     # Schedule job to run at a desired interval (e.g., every day or hour)
-    scheduler.add_job(scrape_job, "interval", seconds=10, coalesce=True)
+    scheduler.add_job(scrape_job, "interval", seconds=120)
     scheduler.start()
 
 
-# if __name__ == "__main__":
-#     start_scheduler()
-#     # Block to keep the scheduler running
-#     logger.info("Scheduler started. Press Ctrl+C to exit.")
+if __name__ == "__main__":
+    start_scheduler()
+    # Block to keep the scheduler running
+    logger.info("Scheduler started. Press Ctrl+C to exit.")
 
-#     while True:
-#         try:
-#             time.sleep(1)  # Keep the main thread alive
-#         except KeyboardInterrupt:
-#             logger.info("Scheduler stopped.")
-#             break
+    while True:
+        try:
+            time.sleep(1)  # Keep the main thread alive
+        except KeyboardInterrupt:
+            logger.info("Scheduler stopped.")
+            break

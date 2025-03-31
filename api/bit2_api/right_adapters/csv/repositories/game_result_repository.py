@@ -65,7 +65,7 @@ class GameResultRepository(BaseRepository[GameResultModel], IGameResultRepositor
             "draw_date": command.draw_date.isoformat(),
             "numbers": command.numbers,
             "bonus": command.bonus,
-            "type": command.type.value,
+            "type": str(command.type),
         }
         return super().create(game_result_dict, db_session)
 
