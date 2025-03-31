@@ -1,0 +1,73 @@
+services:
+  bit2-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    environment:
+      DATABASE_URL: postgresql+psycopg2://bit2:bit2@bit2-db:5432/bit2
+      ENV_NAME: development
+      # WEB SCRAPING
+      SCRAPING_ENABLED: "true"
+      SCRAPING_INTERVAL: 60
+      SCRAPING_TIMEOUT: 10
+      SCRAPING_RETRIES: 3
+      BASE_SCRAPING_URL: 
+      BASE_SELENIUM_URL: http://selenium:4444/wd/hub  # Updated to point to the Selenium container
+    ports:
+      - 8000:8000
+    volumes:
+      - ./api:/opt/pysetup
+    depends_on:
+      - bit2-scheduler
+      - bit2-db
+
+  bit2-db:
+    image: postgres:10.7
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: bit2
+      POSTGRES_USER: bit2
+      POSTGRES_PASSWORD: bit2
+  
+  selenium:
+    image: selenium/standalone-chrome
+    ports:
+      - 4444:4444  # Expose Selenium WebDriver port
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - /dev/shm:/dev/shm  # Shared memory for Chrome
+    # Optional: Add a volume for ChromeDriver logs
+    # volumes:
+    #   - ./chromedriver_logs:/var/log/chromedriver
+    
+    restart: always
+  
+  bit2-scheduler:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.dev
+    command: ["poetry", "run", "python", "-m", "bit2_api.utils_main.scheduler"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://bit2:bit2@bit2-db:5432/bit2
+      ENV_NAME: development
+      # WEB SCRAPING
+      SCRAPING_ENABLED: "true"
+      SCRAPING_INTERVAL: 60
+      SCRAPING_TIMEOUT: 10
+      SCRAPING_RETRIES: 3
+      BASE_SCRAPING_URL: 
+      BASE_SELENIUM_URL: http://selenium:4444/wd/hub
+    volumes:
+      - ./api:/opt/pysetup
+    depends_on:
+      selenium:
+        condition: service_healthy
+      bit2-db:
+        condition: service_started
+    restart: always

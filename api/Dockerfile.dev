@@ -1,0 +1,63 @@
+###############################################
+# Base Image
+###############################################
+FROM python:3.10-slim-buster AS python-base
+
+# Environment Variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    POETRY_VERSION=1.4.2 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_NO_INTERACTION=1 \
+    PYSETUP_PATH="/opt/pysetup" \
+    VENV_PATH="/opt/pysetup/.venv" \
+    CHROME_BIN="/usr/bin/chromium-browser" \
+    CHROMEDRIVER_PATH="/usr/bin/chromedriver"
+
+# Prepend Poetry and venv to PATH
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+
+# Install system dependencies
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    curl \
+    build-essential \
+    libpq-dev \
+    gcc \
+    wget \
+    ca-certificates \
+    chromium \
+    chromium-driver \
+    libnss3 \
+    libxss1 \
+    libappindicator3-1 \
+    libasound2 \
+    fonts-liberation \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python
+
+# Set working directory
+WORKDIR $PYSETUP_PATH
+
+# Copy dependencies files for caching
+COPY poetry.lock pyproject.toml ./
+
+# Install dependencies (without dev dependencies)
+RUN poetry install --no-root --no-dev
+
+# Verify installation
+RUN poetry show uvicorn
+RUN poetry run uvicorn --version
+
+# Copy application code
+COPY . .
+
+# Run application
+CMD ["poetry", "run", "uvicorn", "bit2_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# CMD ["poetry", "run", "python", "-m", "bit2_api.utils_main.scheduler"]

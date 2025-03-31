@@ -10,13 +10,28 @@ packages = [{include = "bit2_api"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "^0.95.0"
-uvicorn = "^0.21.1"
-httpx = "^0.24.0"
+inject = "^4.3.1"
+
+# API Framework
+fastapi = "^0.100.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+gunicorn = "^21.2.0"
+fastapi-versioning = "^0.10.0"
+python-multipart = "^0.0.9"
+FastAPI-SQLAlchemy = "^0.2.1"
+
+# Database
+alembic = "^1.13.1"
+psycopg2 = "^2.9.9"
+
+
 beautifulsoup4 = "^4.12.2"
 lxml = "^4.9.2"
 pydantic = "^1.10.2"
 pytest-cov = "^6.0.0"
+apscheduler = "^3.11.0"
+httpx = "^0.28.1"
+selenium = "^4.30.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.2"

@@ -14,3 +14,11 @@ class GameResult:
     numbers: List[int]
     bonus: Optional[int]
     type: GameTypeEnum
+
+    def to_dict(self):
+        return {
+            "draw_date": self.draw_date.isoformat() if self.draw_date else None,
+            "numbers": self.numbers,
+            "bonus": self.bonus,
+            "type": self.type.name if self.type else None,  # Assuming `type` is an Enum
+        }
