@@ -17,7 +17,7 @@ class GameResultRepository(BaseRepository[GameResultModel], IGameResultRepositor
     """Repository for game results in CSV"""
 
     def __init__(self):
-        super().__init__("game_results")
+        super().__init__(f"{datetime.now()}-game_results")
 
     @staticmethod
     def to_model(item: Dict[str, Any]) -> GameResultModel:

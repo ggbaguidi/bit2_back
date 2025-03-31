@@ -1,13 +1,13 @@
+import logging
 import time
 
-import logging
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from bit2_api.right_adapters.web_scraper import ScraperRepository
 
 executors = {
-    'default': ThreadPoolExecutor(max_workers=3)  # Adjust max_workers as needed
+    "default": ThreadPoolExecutor(max_workers=3)  # Adjust max_workers as needed
 }
 
 MONTH = [
@@ -32,13 +32,14 @@ current_draw = ""  # Optionally, set a draw filter like "Fortune" or "Star" if n
 wait_time = 1  # Default wait time for Selenium operations
 
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
 def get_previous_month(month: str, year: str) -> str:
     """
     Given the month and year in "month year" format,
@@ -67,7 +68,7 @@ def scrape_job():
     )
     logger.info(f"Scraped {len(results)} results for month: {current_month}")
     # Process the results as needed
-    
+
     # Here, you can store the results or process them further.
     # Optionally, update current_month based on your business logic
     # For example, to move to the previous month, you could create a helper function:

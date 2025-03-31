@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi_versioning import version
 
-
 from bit2_api.core.domains.commands import ExtractGameResultCommand
 from bit2_api.core.domains.errors import InvalidGameResultError
 from bit2_api.core.use_cases import ExtractGameResult
@@ -44,10 +43,9 @@ def scrape_results(
             type=result.type,
         )
         uc_.execute(command)
-    
+
     # Convert results to JSON-serializable format
     serialized_results = [result.to_dict() for result in scraped_results]
-
 
     # Process results as needed
     # For example, you can return the results as a JSON response

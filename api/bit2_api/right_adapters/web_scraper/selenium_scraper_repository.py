@@ -50,7 +50,7 @@ class ScraperRepository(IScraperRepository):
     def fetch_results(
         self, month: str, draw: str, wait_time: int = 1
     ) -> List[LotteryResult]:
-        
+
         logger.info("Fetching results...")
         try:
             self.driver.get(self.base_url)
