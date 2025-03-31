@@ -1,0 +1,37 @@
+name: CI Pipeline
+
+on: push
+
+jobs:
+  bit2-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker Images
+        run: docker compose build --no-cache
+
+      - name: Install Dependencies
+        run: docker compose run --rm bit2-api poetry install
+
+      - name: Start Containers
+        run: docker compose up -d bit2-api bit2-db bit2-scheduler
+
+      - name: Verify Running Containers
+        run: docker ps -a
+
+      - name: Run Black
+        run: docker compose exec bit2-api poetry run black --check .
+
+      - name: Run isort
+        run: docker compose exec bit2-api poetry run isort --profile black --check .
+
+      - name: Run Pylint
+        run: docker compose exec bit2-api poetry run pylint bit2_api
+
+      # - name: Run Database Migrations
+      #   run: docker compose exec bit2-api poetry run alembic upgrade head
+
+      - name: Run Tests with Pytest
+        run: docker compose exec bit2-api poetry run pytest -vv
