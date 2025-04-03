@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import date
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -22,7 +23,25 @@ MONTH = [
 YEARS = ["2023", "2024", "2025"]
 
 # Global variable to maintain current month (e.g., "mars 2025")
-current_month = "mars 2025"
+current_month = date.today().strftime("%B %Y").lower()  # Get current month and year
+print(f"Current month: {current_month}")
+# To french
+current_month = (
+    current_month.replace("january", "janvier")
+    .replace("february", "février")
+    .replace("march", "mars")
+    .replace("april", "avril")
+    .replace("may", "mai")
+    .replace("june", "juin")
+    .replace("july", "juillet")
+    .replace("august", "août")
+    .replace("september", "septembre")
+    .replace("october", "octobre")
+    .replace("november", "novembre")
+    .replace("december", "décembre")
+)
+print(f"Current month in French: {current_month}")
+# current_month = "mars 2025"  # For testing, you can set a specific month and year
 current_draw = ""  # Optionally, set a draw filter like "Fortune" or "Star" if needed
 wait_time = 1  # Default wait time for Selenium operations
 
@@ -57,7 +76,7 @@ def scrape_job():
 
     global current_month, wait_time, current_draw
     scraper = ScraperRepository()
-    logger.info(f"Initiating scrape...")
+    logger.info("Initiating scrape...")
     results = scraper.fetch_results(
         current_month, draw=current_draw, wait_time=wait_time
     )
